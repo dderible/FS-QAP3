@@ -1,0 +1,14 @@
+<%- include('partials/header', { title: "Landing" }) %>
+
+<h1>User Dashboard</h1>
+<h2>Welcome, <%=username %></h2>
+<h3>Role: <%=role %></h3>
+
+<div class="landing">
+
+
+    <form action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+    <%- include('partials/footer') %>
+</div>
