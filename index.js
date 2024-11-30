@@ -46,7 +46,11 @@ app.get("/login", (request, response) => {
 
 // POST /login - Allows a user to login
 app.post("/login", (request, response) => {
+    const {email, password} = request.body;
+    const user = USERS.find((user) => user.email === email);
 
+    request.session.user = user;
+    response.redirect('/landing')
 });
 
 // GET /signup - Render signup form
@@ -56,7 +60,27 @@ app.get("/signup", (request, response) => {
 
 // POST /signup - Allows a user to signup
 app.post("/signup", (request, response) => {
-    
+    const newName = request.body.username;
+    const newEmail = request.body.email;
+    const newPassword = request.body.password;
+    const newID = Math.max(...USERS.map(user => user.id)) + 1;
+    const newUser = {
+        id: newID,
+        username: newName,
+        email: newEmail,
+        password: bcrypt.hashSync(newPassword, SALT_ROUNDS),
+        role: "user"
+    }
+
+    USERS.push(newUser)
+    console.log(USERS)
+
+});
+
+// POST /logout - Allows a user to logout
+app.post("/logout", (request, response) => {
+    request.session.destroy();
+    response.redirect("index");
 });
 
 // GET / - Render index page or redirect to landing if logged in
