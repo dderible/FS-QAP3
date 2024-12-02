@@ -41,7 +41,8 @@ const USERS = [
 
 // GET /login - Render login form
 app.get("/login", (request, response) => {
-    response.render("login");
+    const error = request.query.error || null;
+    response.render("login", { error });
 });
 
 // POST /login - Allows a user to login
@@ -55,36 +56,55 @@ app.post("/login", (request, response) => {
         request.session.email = user.email;
         return response.redirect("/landing");
     }
+
+    // Error message:
+    return response.status(400).render("login", { 
+        error: "ERROR: Invalid or Incorrect Email or Password." 
+    });
 });
 
 // GET /signup - Render signup form
 app.get("/signup", (request, response) => {
-    response.render("signup");
+    const error = request.query.error || null;
+    response.render("signup", { error });
 });
 
 // POST /signup - Allows a user to signup
 app.post("/signup", (request, response) => {
-    const newName = request.body.username;
-    const newEmail = request.body.email;
+    const username = request.body.username;
+    const email = request.body.email;
     const newPassword = request.body.password;
     const newID = Math.max(...USERS.map(user => user.id)) + 1;
     const newUser = {
         id: newID,
-        username: newName,
-        email: newEmail,
+        username: username,
+        email: email,
         password: bcrypt.hashSync(newPassword, SALT_ROUNDS),
         role: "user"
     }
 
+    // Error messages:
+    if (USERS.find((user) => user.username === username)) {
+        return response.status(400).render("signup", {
+            error: "ERROR: Username has already been registered.",
+        });
+    } else if (USERS.find((user) => user.email === email)) {
+        return response.status(400).render("signup", {
+            error: "ERROR: Email has already been registered.",
+        });
+    }
+
+
     USERS.push(newUser)
     console.log(USERS)
-
+    console.log("success");
+    response.redirect("/");
 });
 
 // POST /logout - Allows a user to logout
 app.post("/logout", (request, response) => {
     request.session.destroy();
-    response.redirect("index");
+    response.redirect("/");
 });
 
 // GET / - Render index page or redirect to landing if logged in
