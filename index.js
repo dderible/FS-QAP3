@@ -49,8 +49,12 @@ app.post("/login", (request, response) => {
     const {email, password} = request.body;
     const user = USERS.find((user) => user.email === email);
 
-    request.session.user = user;
-    response.redirect('/landing')
+    if (!!user && bcrypt.compareSync(password, user.password)) {
+        request.session.username = user.username;
+        request.session.role = user.role;
+        request.session.email = user.email;
+        return response.redirect("/landing");
+    }
 });
 
 // GET /signup - Render signup form
@@ -93,7 +97,16 @@ app.get("/", (request, response) => {
 
 // GET /landing - Shows a welcome page for users, shows the names of all users if an admin
 app.get("/landing", (request, response) => {
-    
+    const username = request.session.username;
+    const role = request.session.role;
+
+    // For admins
+    if (role === "admin") {
+        return response.render("landing", {username, users: USERS});
+    }
+
+    // For users
+    return response.render("landing", { username, users: null });
 });
 
 // Start server
